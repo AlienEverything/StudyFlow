@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StudyFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: #e9ecef;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --border: #404040;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .welcome-section {
+            margin-bottom: 2rem;
+        }
+
+        .welcome-section h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-section p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card h3 {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header h2 {
+            font-size: 1.3rem;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.9rem;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background: var(--bg-primary);
+            transition: transform 0.2s;
+        }
+
+        .task-item:hover {
+            transform: translateX(4px);
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 1rem;
+            cursor: pointer;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+
+        .task-meta {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .priority-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-low {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        [data-theme="dark"] .priority-high {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        [data-theme="dark"] .priority-medium {
+            background: #78350f;
+            color: #fcd34d;
+        }
+
+        [data-theme="dark"] .priority-low {
+            background: #1e3a8a;
+            color: #93c5fd;
+        }
+
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .schedule-item {
+            padding: 1rem;
+            border-left: 4px solid var(--accent);
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        .schedule-time {
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .schedule-title {
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+
+        .schedule-subject {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .streak-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .streak-flame {
+            font-size: 1.5rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-secondary);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+                box-shadow: var(--shadow-lg);
+                display: none;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-section h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">StudyFlow</a>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html" class="active">Dashboard</a></li>
+            <li><a href="pomodoro.html">Pomodoro</a></li>
+            <li><a href="tasks.html">Tasks</a></li>
+            <li><a href="planner.html">Planner</a></li>
+            <li><a href="notes.html">Notes</a></li>
+            <li><a href="statistics.html">Statistics</a></li>
+            <li><button class="theme-toggle" id="themeToggle">🌙</button></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h1>Welcome back! 👋</h1>
+            <p id="currentDate"></p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Study Streak</h3>
+                <div class="stat-value" id="streakValue">0</div>
+                <div class="streak-indicator">
+                    <span class="streak-flame">🔥</span>
+                    <span class="stat-subtitle">days in a row</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>Today's Focus Time</h3>
+                <div class="stat-value" id="todayTime">0h 0m</div>
+                <div class="stat-subtitle">Keep it up!</div>
+            </div>
+            <div class="stat-card">
+                <h3>Tasks Completed</h3>
+                <div class="stat-value" id="tasksCompleted">0</div>
+                <div class="stat-subtitle" id="tasksTotal">of 0 tasks</div>
+            </div>
+            <div class="stat-card">
+                <h3>Weekly Goal</h3>
+                <div class="stat-value" id="weeklyProgress">0%</div>
+                <div class="stat-subtitle">25 hours target</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Today's Tasks</h2>
+                    <a href="tasks.html" class="btn btn-sm">View All</a>
+                </div>
+                <div class="task-list" id="taskList">
+                    <div class="empty-state">No tasks for today. Great job! 🎉</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Today's Schedule</h2>
+                    <a href="planner.html" class="btn btn-sm">View Calendar</a>
+                </div>
+                <div class="schedule-list" id="scheduleList">
+                    <div class="empty-state">No sessions scheduled</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Management
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // Mobile Menu
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Display Current Date
+        const currentDate = document.getElementById('currentDate');
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        currentDate.textContent = today.toLocaleDateString('en-US', options);
+
+        // Study Streak Calculation
+        function calculateStreak() {
+            const sessions = JSON.parse(localStorage.getItem('studySessions')) || [];
+            if (sessions.length === 0) return 0;
+
+            const sortedSessions = sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            let streak = 0;
+            let currentDate = new Date();
+            currentDate.setHours(0, 0, 0, 0);
+
+            for (let i = 0; i < sortedSessions.length; i++) {
+                const sessionDate = new Date(sortedSessions[i].date);
+                sessionDate.setHours(0, 0, 0, 0);
+                
+                const diffDays = Math.floor((currentDate - sessionDate) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === streak) {
+                    streak++;
+                    currentDate = sessionDate;
+                } else if (diffDays > streak) {
+                    break;
+                }
+            }
+
+            return streak;
+        }
+
+        // Today's Focus Time
+        function getTodayFocusTime() {
+            const sessions = JSON.parse(localStorage.getItem('studySessions')) || [];
+            const today = new Date().toDateString();
+            
+            const todaySessions = sessions.filter(s => new Date(s.date).toDateString() === today);
+            const totalMinutes = todaySessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+            
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            
+            return { hours, minutes, totalMinutes };
+        }
+
+        // Tasks Stats
+        function getTasksStats() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const today = new Date().toDateString();
+            
+            const todayTasks = tasks.filter(t => {
+                if (!t.dueDate) return false;
+                return new Date(t.dueDate).toDateString() === today;
+            });
+            
+            const completed = todayTasks.filter(t => t.completed).length;
+            const total = todayTasks.length;
+            
+            return { completed, total };
+        }
+
+        // Weekly Progress
+        function getWeeklyProgress() {
+            const sessions = JSON.parse(localStorage.getItem('studySessions')) || [];
+            const today = new Date();
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            
+            const weekSessions = sessions.filter(s => new Date(s.date) >= weekStart);
+            const totalMinutes = weekSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+            const weeklyGoal = 25 * 60; // 25 hours in minutes
+            
+            return Math.min(Math.round((totalMinutes / weeklyGoal) * 100), 100);
+        }
+
+        // Update Dashboard Stats
+        function updateStats() {
+            const streak = calculateStreak();
+            document.getElementById('streakValue').textContent = streak;
+
+            const { hours, minutes } = getTodayFocusTime();
+            document.getElementById('todayTime').textContent = `${hours}h ${minutes}m`;
+
+            const { completed, total } = getTasksStats();
+            document.getElementById('tasksCompleted').textContent = completed;
+            document.getElementById('tasksTotal').textContent = `of ${total} tasks`;
+
+            const weeklyProgress = getWeeklyProgress();
+            document.getElementById('weeklyProgress').textContent = `${weeklyProgress}%`;
+        }
+
+        // Display Today's Tasks
+        function displayTodayTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const today = new Date().toDateString();
+            
+            const todayTasks = tasks.filter(t => {
+                if (!t.dueDate) return false;
+                return new Date(t.dueDate).toDateString() === today;
+            }).slice(0, 5);
+
+            const taskList = document.getElementById('taskList');
+            
+            if (todayTasks.length === 0) {
+                taskList.innerHTML = '<div class="empty-state">No tasks for today. Great job! 🎉</div>';
+                return;
+            }
+
+            taskList.innerHTML = todayTasks.map(task => `
+                <div class="task-item">
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} data-id="${task.id}">
+                    <div class="task-info">
+                        <div class="task-title">${task.title}</div>
+                        <div class="task-meta">
+                            ${task.subject || 'General'}
+                            ${task.priority ? `<span class="priority-badge priority-${task.priority}">${task.priority}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add event listeners for checkboxes
+            document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const taskId = e.target.dataset.id;
+                    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+                    const task = tasks.find(t => t.id === taskId);
+                    if (task) {
+                        task.completed = e.target.checked;
+                        localStorage.setItem('tasks', JSON.stringify(tasks));
+                        updateStats();
+                    }
+                });
+            });
+        }
+
+        // Display Today's Schedule
+        function displayTodaySchedule() {
+            const sessions = JSON.parse(localStorage.getItem('plannedSessions')) || [];
+            const today = new Date().toDateString();
+            
+            const todaySessions = sessions.filter(s => {
+                return new Date(s.date).toDateString() === today;
+            }).sort((a, b) => a.time.localeCompare(b.time)).slice(0, 5);
+
+            const scheduleList = document.getElementById('scheduleList');
+            
+            if (todaySessions.length === 0) {
+                scheduleList.innerHTML = '<div class="empty-state">No sessions scheduled</div>';
+                return;
+            }
+
+            scheduleList.innerHTML = todaySessions.map(session => `
+                <div class="schedule-item">
+                    <div class="schedule-time">${session.time}</div>
+                    <div class="schedule-title">${session.title}</div>
+                    <div class="schedule-subject">${session.subject || 'Study Session'} • ${session.duration || 25} min</div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize Dashboard
+        updateStats();
+        displayTodayTasks();
+        displayTodaySchedule();
+
+        // Refresh stats every minute
+        setInterval(updateStats, 60000);
+    </script>
+</body>
+</html>

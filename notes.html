@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes - StudyFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: #e9ecef;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --border: #404040;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+        }
+
+        .btn-icon {
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: var(--accent-hover);
+        }
+
+        .search-box {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .folders-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.8rem;
+        }
+
+        .folder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .folder-item {
+            padding: 0.7rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .folder-item:hover {
+            background: var(--bg-primary);
+        }
+
+        .folder-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .folder-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .folder-count {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        .tags-section {
+            margin-bottom: 2rem;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tag.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .main-content {
+            min-height: 70vh;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .content-header h1 {
+            font-size: 2rem;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .note-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 250px;
+        }
+
+        .note-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .note-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            flex: 1;
+            word-wrap: break-word;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 0.3rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .note-card:hover .note-actions {
+            opacity: 1;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.3rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+            font-size: 1rem;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-primary);
+        }
+
+        .note-content {
+            color: var(--text-secondary);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .note-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .note-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .note-tags {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .note-tag {
+            padding: 0.2rem 0.6rem;
+            background: var(--bg-primary);
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 300px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .tags-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            min-height: 48px;
+        }
+
+        .tags-input-container:focus-within {
+            border-color: var(--accent);
+        }
+
+        .tag-input-item {
+            padding: 0.3rem 0.7rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tags-input {
+            border: none;
+            background: none;
+            flex: 1;
+            min-width: 100px;
+            padding: 0.3rem;
+            color: var(--text-primary);
+        }
+
+        .tags-input:focus {
+            outline: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                margin-bottom: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-secondary);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+                box-shadow: var(--shadow-lg);
+                display: none;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .notes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">StudyFlow</a>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="pomodoro.html">Pomodoro</a></li>
+            <li><a href="tasks.html">Tasks</a></li>
+            <li><a href="planner.html">Planner</a></li>
+            <li><a href="notes.html" class="active">Notes</a></li>
+            <li><a href="statistics.html">Statistics</a></li>
+            <li><button class="theme-toggle" id="themeToggle">🌙</button></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Organize</h2>
+                <button class="btn-icon" id="addFolderBtn" title="Add Folder">+</button>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search notes...">
+            </div>
+
+            <div class="folders-section">
+                <div class="section-title">Folders</div>
+                <div class="folder-list" id="folderList"></div>
+            </div>
+
+            <div class="tags-section">
+                <div class="section-title">Tags</div>
+                <div class="tag-list" id="tagList"></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h1 id="contentTitle">All Notes</h1>
+                <button class="btn" id="addNoteBtn">+ New Note</button>
+            </div>
+
+            <div class="notes-grid" id="notesGrid">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h3>No notes yet</h3>
+                    <p>Create your first note to get started!</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Note Modal -->
+    <div class="modal" id="noteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">New Note</h2>
+                <button class="close-btn" id="closeModal">×</button>
+            </div>
+            <form id="noteForm">
+                <div class="form-group">
+                    <label for="noteTitle">Title *</label>
+                    <input type="text" id="noteTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="noteFolder">Folder</label>
+                    <select id="noteFolder">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="noteContent">Content</label>
+                    <textarea id="noteContent"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tags</label>
+                    <div class="tags-input-container" id="tagsContainer">
+                        <input type="text" class="tags-input" id="tagsInput" placeholder="Type and press Enter">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Folder Modal -->
+    <div class="modal" id="folderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Folder</h2>
+                <button class="close-btn" id="closeFolderModal">×</button>
+            </div>
+            <form id="folderForm">
+                <div class="form-group">
+                    <label for="folderName">Folder Name *</label>
+                    <input type="text" id="folderName" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelFolderBtn">Cancel</button>
+                    <button type="submit" class="btn">Create Folder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Theme Management
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // Mobile Menu
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        menuToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
+
+        // Notes Manager Logic
+        class NotesManager {
+            constructor() {
+                this.notes = this.loadNotes();
+                this.folders = this.loadFolders();
+                this.currentFolder = null;
+                this.currentTag = null;
+                this.searchQuery = '';
+                this.editingNoteId = null;
+                this.tempTags = [];
+                
+                this.setupEventListeners();
+                this.renderFolders();
+                this.renderTags();
+                this.renderNotes();
+            }
+
+            loadNotes() {
+                return JSON.parse(localStorage.getItem('notes')) || [];
+            }
+
+            loadFolders() {
+                const defaultFolders = ['Personal', 'Work', 'Study'];
+                return JSON.parse(localStorage.getItem('folders')) || defaultFolders;
+            }
+
+            saveNotes() {
+                localStorage.setItem('notes', JSON.stringify(this.notes));
+            }
+
+            saveFolders() {
+                localStorage.setItem('folders', JSON.stringify(this.folders));
+            }
+
+            setupEventListeners() {
+                document.getElementById('addNoteBtn').addEventListener('click', () => this.openNoteModal());
+                document.getElementById('addFolderBtn').addEventListener('click', () => this.openFolderModal());
+                document.getElementById('closeModal').addEventListener('click', () => this.closeNoteModal());
+                document.getElementById('closeFolderModal').addEventListener('click', () => this.closeFolderModal());
+                document.getElementById('cancelBtn').addEventListener('click', () => this.closeNoteModal());
+                document.getElementById('cancelFolderBtn').addEventListener('click', () => this.closeFolderModal());
+                document.getElementById('noteForm').addEventListener('submit', (e) => this.saveNote(e));
+                document.getElementById('folderForm').addEventListener('submit', (e) => this.saveFolder(e));
+                
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchQuery = e.target.value.toLowerCase();
+                    this.renderNotes();
+                });
+
+                const tagsInput = document.getElementById('tagsInput');
+                tagsInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.addTag(tagsInput.value.trim());
+                        tagsInput.value = '';
+                    }
+                });
+
+                document.getElementById('noteModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'noteModal') this.closeNoteModal();
+                });
+
+                document.getElementById('folderModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'folderModal') this.closeFolderModal();
+                });
+            }
+
+            renderFolders() {
+                const folderList = document.getElementById('folderList');
+                const folderSelect = document.getElementById('noteFolder');
+                
+                const allNotesCount = this.notes.length;
+                const folderCounts = {};
+                
+                this.notes.forEach(note => {
+                    if (note.folder) {
+                        folderCounts[note.folder] = (folderCounts[note.folder] || 0) + 1;
+                    }
+                });
+
+                folderList.innerHTML = `
+                    <div class="folder-item ${this.currentFolder === null ? 'active' : ''}" onclick="notesManager.selectFolder(null)">
+                        <div class="folder-name">📂 All Notes</div>
+                        <div class="folder-count">${allNotesCount}</div>
+                    </div>
+                    ${this.folders.map(folder => `
+                        <div class="folder-item ${this.currentFolder === folder ? 'active' : ''}" onclick="notesManager.selectFolder('${folder}')">
+                            <div class="folder-name">📁 ${folder}</div>
+                            <div class="folder-count">${folderCounts[folder] || 0}</div>
+                        </div>
+                    `).join('')}
+                `;
+
+                folderSelect.innerHTML = '<option value="">None</option>' + 
+                    this.folders.map(folder => `<option value="${folder}">${folder}</option>`).join('');
+            }
+
+            renderTags() {
+                const tags = new Set();
+                this.notes.forEach(note => {
+                    if (note.tags) {
+                        note.tags.forEach(tag => tags.add(tag));
+                    }
+                });
+
+                const tagList = document.getElementById('tagList');
+                
+                if (tags.size === 0) {
+                    tagList.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem;">No tags yet</div>';
+                    return;
+                }
+
+                tagList.innerHTML = Array.from(tags).map(tag => `
+                    <div class="tag ${this.currentTag === tag ? 'active' : ''}" onclick="notesManager.selectTag('${tag}')">
+                        #${tag}
+                    </div>
+                `).join('');
+            }
+
+            selectFolder(folder) {
+                this.currentFolder = folder;
+                this.currentTag = null;
+                this.renderFolders();
+                this.renderTags();
+                this.renderNotes();
+                document.getElementById('contentTitle').textContent = folder || 'All Notes';
+            }
+
+            selectTag(tag) {
+                if (this.currentTag === tag) {
+                    this.currentTag = null;
+                } else {
+                    this.currentTag = tag;
+                    this.currentFolder = null;
+                }
+                this.renderFolders();
+                this.renderTags();
+                this.renderNotes();
+                document.getElementById('contentTitle').textContent = this.currentTag ? `#${this.currentTag}` : 'All Notes';
+            }
+
+            filterNotes() {
+                let filtered = this.notes;
+
+                if (this.currentFolder) {
+                    filtered = filtered.filter(note => note.folder === this.currentFolder);
+                }
+
+                if (this.currentTag) {
+                    filtered = filtered.filter(note => note.tags && note.tags.includes(this.currentTag));
+                }
+
+                if (this.searchQuery) {
+                    filtered = filtered.filter(note => 
+                        note.title.toLowerCase().includes(this.searchQuery) ||
+                        note.content.toLowerCase().includes(this.searchQuery) ||
+                        (note.tags && note.tags.some(tag => tag.toLowerCase().includes(this.searchQuery)))
+                    );
+                }
+
+                return filtered;
+            }
+
+            renderNotes() {
+                const grid = document.getElementById('notesGrid');
+                const filtered = this.filterNotes();
+
+                if (filtered.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <h3>${this.searchQuery ? 'No notes found' : 'No notes yet'}</h3>
+                            <p>${this.searchQuery ? 'Try a different search term' : 'Create your first note to get started!'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = filtered.map(note => {
+                    const date = new Date(note.updatedAt || note.createdAt).toLocaleDateString();
+                    return `
+                        <div class="note-card" onclick="notesManager.openNoteModal('${note.id}')">
+                            <div class="note-header">
+                                <div class="note-title">${note.title}</div>
+                                <div class="note-actions" onclick="event.stopPropagation()">
+                                    <button class="icon-btn" onclick="notesManager.openNoteModal('${note.id}')" title="Edit">✏️</button>
+                                    <button class="icon-btn" onclick="notesManager.deleteNote('${note.id}')" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="note-content">${note.content || 'No content'}</div>
+                            <div class="note-footer">
+                                <div class="note-meta">${date}</div>
+                                <div class="note-tags">
+                                    ${note.tags ? note.tags.slice(0, 3).map(tag => `<span class="note-tag">#${tag}</span>`).join('') : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            openNoteModal(noteId = null) {
+                this.editingNoteId = noteId;
+                const note = noteId ? this.notes.find(n => n.id === noteId) : null;
+                
+                this.tempTags = note && note.tags ? [...note.tags] : [];
+                
+                document.getElementById('modalTitle').textContent = note ? 'Edit Note' : 'New Note';
+                document.getElementById('noteTitle').value = note ? note.title : '';
+                document.getElementById('noteFolder').value = note ? note.folder || '' : '';
+                document.getElementById('noteContent').value = note ? note.content || '' : '';
+                
+                this.renderTempTags();
+                document.getElementById('noteModal').classList.add('active');
+            }
+
+            closeNoteModal() {
+                document.getElementById('noteModal').classList.remove('active');
+                document.getElementById('noteForm').reset();
+                this.editingNoteId = null;
+                this.tempTags = [];
+            }
+
+            addTag(tag) {
+                if (tag && !this.tempTags.includes(tag)) {
+                    this.tempTags.push(tag);
+                    this.renderTempTags();
+                }
+            }
+
+            removeTag(tag) {
+                this.tempTags = this.tempTags.filter(t => t !== tag);
+                this.renderTempTags();
+            }
+
+            renderTempTags() {
+                const container = document.getElementById('tagsContainer');
+                const input = document.getElementById('tagsInput');
+                
+                container.innerHTML = this.tempTags.map(tag => `
+                    <div class="tag-input-item">
+                        #${tag}
+                        <span class="tag-remove" onclick="notesManager.removeTag('${tag}')">×</span>
+                    </div>
+                `).join('') + container.innerHTML;
+                
+                container.appendChild(input);
+            }
+
+            saveNote(e) {
+                e.preventDefault();
+                
+                const note = {
+                    id: this.editingNoteId || Date.now().toString(),
+                    title: document.getElementById('noteTitle').value,
+                    folder: document.getElementById('noteFolder').value,
+                    content: document.getElementById('noteContent').value,
+                    tags: this.tempTags,
+                    createdAt: this.editingNoteId ? 
+                        this.notes.find(n => n.id === this.editingNoteId).createdAt : 
+                        new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (this.editingNoteId) {
+                    const index = this.notes.findIndex(n => n.id === this.editingNoteId);
+                    this.notes[index] = note;
+                } else {
+                    this.notes.unshift(note);
+                }
+
+                this.saveNotes();
+                this.renderFolders();
+                this.renderTags();
+                this.renderNotes();
+                this.closeNoteModal();
+            }
+
+            deleteNote(id) {
+                this.notes = this.notes.filter(n => n.id !== id);
+                this.saveNotes();
+                this.renderFolders();
+                this.renderTags();
+                this.renderNotes();
+            }
+
+            openFolderModal() {
+                document.getElementById('folderModal').classList.add('active');
+            }
+
+            closeFolderModal() {
+                document.getElementById('folderModal').classList.remove('active');
+                document.getElementById('folderForm').reset();
+            }
+
+            saveFolder(e) {
+                e.preventDefault();
+                const folderName = document.getElementById('folderName').value.trim();
+                
+                if (folderName && !this.folders.includes(folderName)) {
+                    this.folders.push(folderName);
+                    this.saveFolders();
+                    this.renderFolders();
+                    this.closeFolderModal();
+                }
+            }
+        }
+
+        // Initialize Notes Manager
+        const notesManager = new NotesManager();
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                notesManager.openNoteModal();
+            }
+            if (e.key === 'Escape') {
+                notesManager.closeNoteModal();
+                notesManager.closeFolderModal();
+            }
+        });
+    </script>
+</body>
+</html>

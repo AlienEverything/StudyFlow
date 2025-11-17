@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer - StudyFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: #e9ecef;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --border: #404040;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-primary);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .timer-container {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .mode-btn {
+            background: var(--bg-primary);
+            border: 2px solid transparent;
+            padding: 0.7rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .mode-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .timer-display {
+            font-size: 6rem;
+            font-weight: 700;
+            margin: 2rem 0;
+            font-variant-numeric: tabular-nums;
+            color: var(--accent);
+        }
+
+        .timer-label {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .control-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+        }
+
+        .control-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .control-btn.secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .control-btn.secondary:hover {
+            background: var(--border);
+        }
+
+        .progress-ring {
+            margin: 2rem auto;
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 1s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .session-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .settings-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .settings-card h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .setting-item label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .setting-item input {
+            padding: 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .setting-item input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-secondary);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+                box-shadow: var(--shadow-lg);
+                display: none;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .timer-display {
+                font-size: 4rem;
+            }
+
+            .timer-container {
+                padding: 2rem 1rem;
+            }
+
+            .mode-selector {
+                flex-direction: column;
+            }
+
+            .timer-controls {
+                flex-direction: column;
+            }
+
+            .control-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">StudyFlow</a>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="pomodoro.html" class="active">Pomodoro</a></li>
+            <li><a href="tasks.html">Tasks</a></li>
+            <li><a href="planner.html">Planner</a></li>
+            <li><a href="notes.html">Notes</a></li>
+            <li><a href="statistics.html">Statistics</a></li>
+            <li><button class="theme-toggle" id="themeToggle">🌙</button></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="timer-container">
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="work">Focus</button>
+                <button class="mode-btn" data-mode="short">Short Break</button>
+                <button class="mode-btn" data-mode="long">Long Break</button>
+            </div>
+
+            <div class="timer-label" id="timerLabel">Focus Time</div>
+            <div class="timer-display" id="timerDisplay">25:00</div>
+
+            <div class="timer-controls">
+                <button class="control-btn" id="startBtn">Start</button>
+                <button class="control-btn secondary" id="resetBtn">Reset</button>
+            </div>
+
+            <div class="session-info">
+                <div class="info-item">
+                    <div class="info-value" id="sessionsCompleted">0</div>
+                    <div class="info-label">Sessions Today</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-value" id="totalTime">0m</div>
+                    <div class="info-label">Total Time</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-value" id="currentStreak">0</div>
+                    <div class="info-label">Current Streak</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <h2>Timer Settings</h2>
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>Focus Duration (min)</label>
+                    <input type="number" id="workDuration" min="1" max="60" value="25">
+                </div>
+                <div class="setting-item">
+                    <label>Short Break (min)</label>
+                    <input type="number" id="shortBreakDuration" min="1" max="30" value="5">
+                </div>
+                <div class="setting-item">
+                    <label>Long Break (min)</label>
+                    <input type="number" id="longBreakDuration" min="1" max="60" value="15">
+                </div>
+                <div class="setting-item">
+                    <label>Long Break After</label>
+                    <input type="number" id="longBreakInterval" min="1" max="10" value="4">
+                </div>
+            </div>
+            <div class="checkbox-item" style="margin-top: 1.5rem;">
+                <input type="checkbox" id="autoStartBreaks">
+                <label for="autoStartBreaks">Auto-start breaks</label>
+            </div>
+            <div class="checkbox-item" style="margin-top: 0.5rem;">
+                <input type="checkbox" id="autoStartPomodoros">
+                <label for="autoStartPomodoros">Auto-start next session</label>
+            </div>
+            <div id="settingsMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Management
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // Mobile Menu
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        menuToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
+
+        // Pomodoro Timer Logic
+        class PomodoroTimer {
+            constructor() {
+                this.mode = 'work';
+                this.timeLeft = 25 * 60;
+                this.isRunning = false;
+                this.interval = null;
+                this.sessionsCompleted = 0;
+                this.currentStreak = 0;
+                
+                this.loadSettings();
+                this.loadStats();
+                this.updateDisplay();
+                this.setupEventListeners();
+            }
+
+            loadSettings() {
+                const settings = JSON.parse(localStorage.getItem('pomodoroSettings')) || {};
+                this.workDuration = settings.workDuration || 25;
+                this.shortBreakDuration = settings.shortBreakDuration || 5;
+                this.longBreakDuration = settings.longBreakDuration || 15;
+                this.longBreakInterval = settings.longBreakInterval || 4;
+                this.autoStartBreaks = settings.autoStartBreaks || false;
+                this.autoStartPomodoros = settings.autoStartPomodoros || false;
+
+                document.getElementById('workDuration').value = this.workDuration;
+                document.getElementById('shortBreakDuration').value = this.shortBreakDuration;
+                document.getElementById('longBreakDuration').value = this.longBreakDuration;
+                document.getElementById('longBreakInterval').value = this.longBreakInterval;
+                document.getElementById('autoStartBreaks').checked = this.autoStartBreaks;
+                document.getElementById('autoStartPomodoros').checked = this.autoStartPomodoros;
+
+                this.timeLeft = this.workDuration * 60;
+            }
+
+            saveSettings() {
+                const settings = {
+                    workDuration: parseInt(document.getElementById('workDuration').value),
+                    shortBreakDuration: parseInt(document.getElementById('shortBreakDuration').value),
+                    longBreakDuration: parseInt(document.getElementById('longBreakDuration').value),
+                    longBreakInterval: parseInt(document.getElementById('longBreakInterval').value),
+                    autoStartBreaks: document.getElementById('autoStartBreaks').checked,
+                    autoStartPomodoros: document.getElementById('autoStartPomodoros').checked
+                };
+                localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
+                this.loadSettings();
+                this.reset();
+                this.showMessage('Settings saved!');
+            }
+
+            loadStats() {
+                const today = new Date().toDateString();
+                const stats = JSON.parse(localStorage.getItem('pomodoroStats')) || {};
+                
+                if (stats.date !== today) {
+                    stats.date = today;
+                    stats.sessionsCompleted = 0;
+                    stats.totalTime = 0;
+                }
+                
+                this.sessionsCompleted = stats.sessionsCompleted || 0;
+                this.currentStreak = stats.currentStreak || 0;
+                this.totalTime = stats.totalTime || 0;
+                
+                this.updateStatsDisplay();
+            }
+
+            saveStats() {
+                const stats = {
+                    date: new Date().toDateString(),
+                    sessionsCompleted: this.sessionsCompleted,
+                    currentStreak: this.currentStreak,
+                    totalTime: this.totalTime
+                };
+                localStorage.setItem('pomodoroStats', JSON.stringify(stats));
+                this.updateStatsDisplay();
+            }
+
+            updateStatsDisplay() {
+                document.getElementById('sessionsCompleted').textContent = this.sessionsCompleted;
+                document.getElementById('currentStreak').textContent = this.currentStreak;
+                document.getElementById('totalTime').textContent = `${Math.round(this.totalTime)}m`;
+            }
+
+            setupEventListeners() {
+                document.getElementById('startBtn').addEventListener('click', () => this.toggleTimer());
+                document.getElementById('resetBtn').addEventListener('click', () => this.reset());
+
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (!this.isRunning) {
+                            this.switchMode(btn.dataset.mode);
+                        }
+                    });
+                });
+
+                ['workDuration', 'shortBreakDuration', 'longBreakDuration', 'longBreakInterval', 
+                 'autoStartBreaks', 'autoStartPomodoros'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => this.saveSettings());
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+                        e.preventDefault();
+                        this.toggleTimer();
+                    }
+                });
+            }
+
+            switchMode(mode) {
+                this.mode = mode;
+                this.isRunning = false;
+                clearInterval(this.interval);
+
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === mode);
+                });
+
+                switch(mode) {
+                    case 'work':
+                        this.timeLeft = this.workDuration * 60;
+                        document.getElementById('timerLabel').textContent = 'Focus Time';
+                        break;
+                    case 'short':
+                        this.timeLeft = this.shortBreakDuration * 60;
+                        document.getElementById('timerLabel').textContent = 'Short Break';
+                        break;
+                    case 'long':
+                        this.timeLeft = this.longBreakDuration * 60;
+                        document.getElementById('timerLabel').textContent = 'Long Break';
+                        break;
+                }
+
+                this.updateDisplay();
+                document.getElementById('startBtn').textContent = 'Start';
+            }
+
+            toggleTimer() {
+                if (this.isRunning) {
+                    this.pause();
+                } else {
+                    this.start();
+                }
+            }
+
+            start() {
+                this.isRunning = true;
+                document.getElementById('startBtn').textContent = 'Pause';
+                
+                this.interval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+
+                    if (this.timeLeft === 0) {
+                        this.complete();
+                    }
+                }, 1000);
+            }
+
+            pause() {
+                this.isRunning = false;
+                clearInterval(this.interval);
+                document.getElementById('startBtn').textContent = 'Resume';
+            }
+
+            reset() {
+                this.isRunning = false;
+                clearInterval(this.interval);
+                this.switchMode(this.mode);
+            }
+
+            complete() {
+                this.pause();
+                
+                if (this.mode === 'work') {
+                    this.sessionsCompleted++;
+                    this.currentStreak++;
+                    this.totalTime += this.workDuration;
+                    this.saveStats();
+                    
+                    // Save to study sessions
+                    const sessions = JSON.parse(localStorage.getItem('studySessions')) || [];
+                    sessions.push({
+                        date: new Date().toISOString(),
+                        duration: this.workDuration,
+                        type: 'pomodoro'
+                    });
+                    localStorage.setItem('studySessions', JSON.stringify(sessions));
+
+                    // Play notification sound (optional)
+                    this.notify('Focus session complete! Time for a break.');
+
+                    // Auto-start break
+                    const nextMode = this.sessionsCompleted % this.longBreakInterval === 0 ? 'long' : 'short';
+                    this.switchMode(nextMode);
+                    
+                    if (this.autoStartBreaks) {
+                        setTimeout(() => this.start(), 1000);
+                    }
+                } else {
+                    this.notify('Break complete! Ready for another session?');
+                    this.switchMode('work');
+                    
+                    if (this.autoStartPomodoros) {
+                        setTimeout(() => this.start(), 1000);
+                    }
+                }
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                document.getElementById('timerDisplay').textContent = display;
+                document.title = `${display} - ${this.mode === 'work' ? 'Focus' : 'Break'} - StudyFlow`;
+            }
+
+            notify(message) {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('StudyFlow', { body: message });
+                }
+            }
+
+            showMessage(text) {
+                const messageEl = document.getElementById('settingsMessage');
+                messageEl.innerHTML = `<div class="message success">${text}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        // Initialize timer
+        const timer = new PomodoroTimer();
+    </script>
+</body>
+</html>
